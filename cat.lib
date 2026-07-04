@@ -1213,6 +1213,13 @@ do
                             Parent = toggleholder
                         })
 
+                        local function keepHueVisible(descendant)
+                            if descendant.Name == "clueluHueRail" or descendant.Name == "clueluHuePicker" then
+                                descendant.BackgroundTransparency = 0
+                                if descendant:IsA("ImageLabel") or descendant:IsA("ImageButton") then descendant.ImageTransparency = 1 end
+                            end
+                        end
+
                         colorpickerframe.DescendantAdded:Connect(function(descendant)
                             if not opened then
                                 task.wait()
@@ -1229,6 +1236,7 @@ do
                                     descendant.BackgroundTransparency = descendant.BackgroundTransparency + 1
                                 end
                             end
+                            keepHueVisible(descendant)
                         end)
 
                         local bggradient = utility.create("UIGradient", {
@@ -1262,7 +1270,7 @@ do
                             Position = UDim2.new(0, 6, 0, 6),
                             BorderSizePixel = 0,
                             BackgroundColor3 = default,
-                            Image = "http://www.roblox.com/asset/?id=8630797271",
+                            ImageTransparency = 1,
                             Parent = colorpickerframe
                         })
 
@@ -1284,7 +1292,34 @@ do
                             Parent = grayborder
                         })
 
-                        local saturationpicker = utility.create("Frame", {
+                        local saturationwhite = utility.create("Frame", {
+                        ZIndex = 12,
+                        Size = UDim2.new(1, 0, 1, 0),
+                        BorderSizePixel = 0,
+                        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                        Parent = saturationframe
+                    })
+
+                    utility.create("UIGradient", {
+                        Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1)}),
+                        Parent = saturationwhite
+                    })
+
+                    local saturationblack = utility.create("Frame", {
+                        ZIndex = 12,
+                        Size = UDim2.new(1, 0, 1, 0),
+                        BorderSizePixel = 0,
+                        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+                        Parent = saturationframe
+                    })
+
+                    utility.create("UIGradient", {
+                        Rotation = 90,
+                        Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0)}),
+                        Parent = saturationblack
+                    })
+
+                    local saturationpicker = utility.create("Frame", {
                             ZIndex = 13,
                             Size = UDim2.new(0, 2, 0, 2),
                             BorderColor3 = Color3.fromRGB(10, 10, 10),
@@ -1293,13 +1328,14 @@ do
                         })
 
                         local hueframe = utility.create("ImageLabel", {
+                            Name = "clueluHueRail",
                             ZIndex = 12,
                             Size = UDim2.new(0, 14, 0, 100),
                             Position = UDim2.new(1, -20, 0, 6),
                             BorderSizePixel = 0,
                             BackgroundColor3 = Color3.fromRGB(255, 193, 49),
                             ScaleType = Enum.ScaleType.Crop,
-                            Image = "http://www.roblox.com/asset/?id=8630799159",
+                            ImageTransparency = 1,
                             Parent = colorpickerframe
                         })
 
@@ -1321,9 +1357,41 @@ do
                             Parent = grayborder
                         })
 
-                        local huepicker = utility.create("Frame", {
+                        local huegradient = utility.create("Frame", {
+                        ZIndex = 12,
+                        Size = UDim2.new(1, 0, 1, 0),
+                        BorderSizePixel = 0,
+                        BackgroundTransparency = 1,
+                        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                        Parent = hueframe
+                    })
+
+                    local huecolors = {
+                        Color3.fromRGB(255, 0, 0),
+                        Color3.fromRGB(255, 0, 255),
+                        Color3.fromRGB(0, 0, 255),
+                        Color3.fromRGB(0, 255, 255),
+                        Color3.fromRGB(0, 255, 0),
+                        Color3.fromRGB(255, 255, 0),
+                        Color3.fromRGB(255, 0, 0)
+                    }
+
+                    for index, color in ipairs(huecolors) do
+                        utility.create("Frame", {
+                            ZIndex = 12,
+                            Size = UDim2.new(1, 0, 1 / #huecolors, 1),
+                            Position = UDim2.new(0, 0, (index - 1) / #huecolors, 0),
+                            BorderSizePixel = 0,
+                            BackgroundColor3 = color,
+                            Parent = hueframe
+                        })
+                    end
+
+                    local huepicker = utility.create("Frame", {
+                            Name = "clueluHuePicker",
                             ZIndex = 13,
-                            Size = UDim2.new(1, 0, 0, 1),
+                            Size = UDim2.new(1, 2, 0, 3),
+                            Position = UDim2.new(0, -1, 0, 0),
                             BorderColor3 = Color3.fromRGB(10, 10, 10),
                             BackgroundColor3 = Color3.fromRGB(255, 255, 255),
                             Parent = hueframe
@@ -1536,6 +1604,21 @@ do
 
                                 tween.Completed:Wait()
 
+                                
+if opened then
+                                
+    hueframe.BackgroundTransparency = 0
+                                
+    hueframe.ImageTransparency = 1
+                                
+    if huegradient then huegradient.BackgroundTransparency = 1 end
+                                
+    huepicker.BackgroundTransparency = 0
+                                
+    huepicker.BorderSizePixel = 1
+                                
+end
+
                                 if not opened then
                                     local tween = utility.tween(toggleholder, { 0.2 }, { Size = UDim2.new(1, -5, 0, 16) })
                                     tween.Completed:Wait()
@@ -1561,12 +1644,12 @@ do
                         local function updatehue(input)
                             local sizeY = 1 - math.clamp((input.Position.Y - hueframe.AbsolutePosition.Y) / hueframe.AbsoluteSize.Y, 0, 1)
                             local posY = math.clamp(((input.Position.Y - hueframe.AbsolutePosition.Y) / hueframe.AbsoluteSize.Y) * hueframe.AbsoluteSize.Y, 0, hueframe.AbsoluteSize.Y - 2)
-                            huepicker.Position = UDim2.new(0, 0, 0, posY)
+                            huepicker.Position = UDim2.new(0, -1, 0, posY)
 
                             hue = sizeY
                             hsv = Color3.fromHSV(sizeY, sat, val)
 
-                            box.Text = math.clamp(math.floor((hsv.R * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.B * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.G * 255) + 0.5), 0, 255)
+                            box.Text = math.clamp(math.floor((hsv.R * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.G * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.B * 255) + 0.5), 0, 255)
 
                             saturationframe.BackgroundColor3 = hsv
                             icon.BackgroundColor3 = hsv
@@ -1611,7 +1694,7 @@ do
                             val = sizeY
                             hsv = Color3.fromHSV(hue, sizeX, sizeY)
 
-                            box.Text = math.clamp(math.floor((hsv.R * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.B * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.G * 255) + 0.5), 0, 255)
+                            box.Text = math.clamp(math.floor((hsv.R * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.G * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.B * 255) + 0.5), 0, 255)
 
                             saturationframe.BackgroundColor3 = hsv
                             icon.BackgroundColor3 = hsv
@@ -1655,9 +1738,14 @@ do
                             saturationframe.BackgroundColor3 = hsv
                             icon.BackgroundColor3 = hsv
                             saturationpicker.Position = UDim2.new(0, (math.clamp(sat * saturationframe.AbsoluteSize.X, 0, saturationframe.AbsoluteSize.X - 4)), 0, (math.clamp((1 - val) * saturationframe.AbsoluteSize.Y, 0, saturationframe.AbsoluteSize.Y - 4)))
-                            huepicker.Position = UDim2.new(0, 0, 0, math.clamp((1 - hue) * saturationframe.AbsoluteSize.Y, 0, saturationframe.AbsoluteSize.Y - 4))
+                            huepicker.Position = UDim2.new(0, -1, 0, math.clamp((1 - hue) * saturationframe.AbsoluteSize.Y, 0, saturationframe.AbsoluteSize.Y - 4))
+                            hueframe.BackgroundTransparency = 0
+                            hueframe.ImageTransparency = 1
+                            if huegradient then huegradient.BackgroundTransparency = 1 end
+                            huepicker.BackgroundTransparency = 0
+                            huepicker.BorderSizePixel = 1
 
-                            box.Text = math.clamp(math.floor((hsv.R * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.B * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.G * 255) + 0.5), 0, 255)
+                            box.Text = math.clamp(math.floor((hsv.R * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.G * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.B * 255) + 0.5), 0, 255)
 
                             if flag then
                                 library.flags[flag] = Color3.fromRGB(hsv.r * 255, hsv.g * 255, hsv.b * 255)
@@ -1713,7 +1801,7 @@ do
                                 local r, g, b = math.clamp(values[1], 0, 255), math.clamp(values[2], 0, 255), math.clamp(values[3], 0, 255)
                                 set(Color3.fromRGB(r, g, b))
                             else
-                                rgb.Text = math.floor((hsv.r * 255) + 0.5) .. ", " .. math.floor((hsv.g * 255) + 0.5) .. ", " .. math.floor((hsv.b * 255) + 0.5)
+                                box.Text = math.clamp(math.floor((hsv.R * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.G * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.B * 255) + 0.5), 0, 255)
                             end
                         end)
 
@@ -3204,6 +3292,13 @@ do
                         Parent = colorpickerholder
                     })
 
+                    local function keepHueVisible(descendant)
+                        if descendant.Name == "clueluHueRail" or descendant.Name == "clueluHuePicker" then
+                            descendant.BackgroundTransparency = 0
+                            if descendant:IsA("ImageLabel") or descendant:IsA("ImageButton") then descendant.ImageTransparency = 1 end
+                        end
+                    end
+
                     colorpickerframe.DescendantAdded:Connect(function(descendant)
                         if not opened then
                             task.wait()
@@ -3220,6 +3315,7 @@ do
                                 descendant.BackgroundTransparency = descendant.BackgroundTransparency + 1
                             end
                         end
+                        keepHueVisible(descendant)
                     end)
 
                     local bggradient = utility.create("UIGradient", {
@@ -3253,7 +3349,7 @@ do
                         Position = UDim2.new(0, 6, 0, 6),
                         BorderSizePixel = 0,
                         BackgroundColor3 = default,
-                        Image = "http://www.roblox.com/asset/?id=8630797271",
+                        ImageTransparency = 1,
                         Parent = colorpickerframe
                     })
 
@@ -3275,6 +3371,33 @@ do
                         Parent = grayborder
                     })
 
+                    local saturationwhite = utility.create("Frame", {
+                        ZIndex = 12,
+                        Size = UDim2.new(1, 0, 1, 0),
+                        BorderSizePixel = 0,
+                        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                        Parent = saturationframe
+                    })
+
+                    utility.create("UIGradient", {
+                        Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1)}),
+                        Parent = saturationwhite
+                    })
+
+                    local saturationblack = utility.create("Frame", {
+                        ZIndex = 12,
+                        Size = UDim2.new(1, 0, 1, 0),
+                        BorderSizePixel = 0,
+                        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+                        Parent = saturationframe
+                    })
+
+                    utility.create("UIGradient", {
+                        Rotation = 90,
+                        Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 1), NumberSequenceKeypoint.new(1, 0)}),
+                        Parent = saturationblack
+                    })
+
                     local saturationpicker = utility.create("Frame", {
                         ZIndex = 13,
                         Size = UDim2.new(0, 2, 0, 2),
@@ -3284,13 +3407,14 @@ do
                     })
 
                     local hueframe = utility.create("ImageLabel", {
+                        Name = "clueluHueRail",
                         ZIndex = 12,
                         Size = UDim2.new(0, 14, 0, 100),
                         Position = UDim2.new(1, -20, 0, 6),
                         BorderSizePixel = 0,
                         BackgroundColor3 = Color3.fromRGB(255, 193, 49),
                         ScaleType = Enum.ScaleType.Crop,
-                        Image = "http://www.roblox.com/asset/?id=8630799159",
+                        ImageTransparency = 1,
                         Parent = colorpickerframe
                     })
 
@@ -3312,9 +3436,41 @@ do
                         Parent = grayborder
                     })
 
+                    local huegradient = utility.create("Frame", {
+                        ZIndex = 12,
+                        Size = UDim2.new(1, 0, 1, 0),
+                        BorderSizePixel = 0,
+                        BackgroundTransparency = 1,
+                        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                        Parent = hueframe
+                    })
+
+                    local huecolors = {
+                        Color3.fromRGB(255, 0, 0),
+                        Color3.fromRGB(255, 0, 255),
+                        Color3.fromRGB(0, 0, 255),
+                        Color3.fromRGB(0, 255, 255),
+                        Color3.fromRGB(0, 255, 0),
+                        Color3.fromRGB(255, 255, 0),
+                        Color3.fromRGB(255, 0, 0)
+                    }
+
+                    for index, color in ipairs(huecolors) do
+                        utility.create("Frame", {
+                            ZIndex = 12,
+                            Size = UDim2.new(1, 0, 1 / #huecolors, 1),
+                            Position = UDim2.new(0, 0, (index - 1) / #huecolors, 0),
+                            BorderSizePixel = 0,
+                            BackgroundColor3 = color,
+                            Parent = hueframe
+                        })
+                    end
+
                     local huepicker = utility.create("Frame", {
+                        Name = "clueluHuePicker",
                         ZIndex = 13,
-                        Size = UDim2.new(1, 0, 0, 1),
+                        Size = UDim2.new(1, 2, 0, 3),
+                        Position = UDim2.new(0, -1, 0, 0),
                         BorderColor3 = Color3.fromRGB(10, 10, 10),
                         BackgroundColor3 = Color3.fromRGB(255, 255, 255),
                         Parent = hueframe
@@ -3598,6 +3754,21 @@ do
 
                             tween.Completed:Wait()
 
+                            
+if opened then
+                            
+    hueframe.BackgroundTransparency = 0
+                            
+    hueframe.ImageTransparency = 1
+                            
+    if huegradient then huegradient.BackgroundTransparency = 1 end
+                            
+    huepicker.BackgroundTransparency = 0
+                            
+    huepicker.BorderSizePixel = 1
+                            
+end
+
                             if not opened then
                                 local tween = utility.tween(colorpickerholder, { 0.2 }, { Size = UDim2.new(1, -5, 0, 16) })
                                 tween.Completed:Wait()
@@ -3627,12 +3798,12 @@ do
                     local function updatehue(input)
                         local sizeY = 1 - math.clamp((input.Position.Y - hueframe.AbsolutePosition.Y) / hueframe.AbsoluteSize.Y, 0, 1)
                         local posY = math.clamp(((input.Position.Y - hueframe.AbsolutePosition.Y) / hueframe.AbsoluteSize.Y) * hueframe.AbsoluteSize.Y, 0, hueframe.AbsoluteSize.Y - 2)
-                        huepicker.Position = UDim2.new(0, 0, 0, posY)
+                        huepicker.Position = UDim2.new(0, -1, 0, posY)
 
                         hue = sizeY
                         hsv = Color3.fromHSV(sizeY, sat, val)
 
-                        box.Text = math.clamp(math.floor((hsv.R * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.B * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.G * 255) + 0.5), 0, 255)
+                        box.Text = math.clamp(math.floor((hsv.R * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.G * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.B * 255) + 0.5), 0, 255)
 
                         saturationframe.BackgroundColor3 = hsv
                         icon.BackgroundColor3 = hsv
@@ -3677,7 +3848,7 @@ do
                         val = sizeY
                         hsv = Color3.fromHSV(hue, sizeX, sizeY)
 
-                        box.Text = math.clamp(math.floor((hsv.R * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.B * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.G * 255) + 0.5), 0, 255)
+                        box.Text = math.clamp(math.floor((hsv.R * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.G * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.B * 255) + 0.5), 0, 255)
 
                         saturationframe.BackgroundColor3 = hsv
                         icon.BackgroundColor3 = hsv
@@ -3721,9 +3892,14 @@ do
                         saturationframe.BackgroundColor3 = hsv
                         icon.BackgroundColor3 = hsv
                         saturationpicker.Position = UDim2.new(0, (math.clamp(sat * saturationframe.AbsoluteSize.X, 0, saturationframe.AbsoluteSize.X - 4)), 0, (math.clamp((1 - val) * saturationframe.AbsoluteSize.Y, 0, saturationframe.AbsoluteSize.Y - 4)))
-                        huepicker.Position = UDim2.new(0, 0, 0, math.clamp((1 - hue) * saturationframe.AbsoluteSize.Y, 0, saturationframe.AbsoluteSize.Y - 4))
+                        huepicker.Position = UDim2.new(0, -1, 0, math.clamp((1 - hue) * saturationframe.AbsoluteSize.Y, 0, saturationframe.AbsoluteSize.Y - 4))
+                        hueframe.BackgroundTransparency = 0
+                        hueframe.ImageTransparency = 1
+                        if huegradient then huegradient.BackgroundTransparency = 1 end
+                        huepicker.BackgroundTransparency = 0
+                        huepicker.BorderSizePixel = 1
 
-                        box.Text = math.clamp(math.floor((hsv.R * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.B * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.G * 255) + 0.5), 0, 255)
+                        box.Text = math.clamp(math.floor((hsv.R * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.G * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.B * 255) + 0.5), 0, 255)
 
                         if flag then
                             library.flags[flag] = Color3.fromRGB(hsv.r * 255, hsv.g * 255, hsv.b * 255)
@@ -3779,7 +3955,7 @@ do
                             local r, g, b = math.clamp(values[1], 0, 255), math.clamp(values[2], 0, 255), math.clamp(values[3], 0, 255)
                             set(Color3.fromRGB(r, g, b))
                         else
-                            rgb.Text = math.floor((hsv.r * 255) + 0.5) .. ", " .. math.floor((hsv.g * 255) + 0.5) .. ", " .. math.floor((hsv.b * 255) + 0.5)
+                            box.Text = math.clamp(math.floor((hsv.R * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.G * 255) + 0.5), 0, 255) .. ", " .. math.clamp(math.floor((hsv.B * 255) + 0.5), 0, 255)
                         end
                     end)
 
